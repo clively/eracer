@@ -1,10 +1,5 @@
 #include "Arduino.h"
 #include "ERacerControl.h"
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <string>
-
 
 ERacerControl::ERacerControl(int motorAThrottlePin, 
                   int motorAPin1,
@@ -41,34 +36,24 @@ void ERacerControl::runCommand(std::string cmd, int param1, int param2)
 {
    // needs to parse the cmd string, determine which thing to do, and then to do it :)
 
-	/*
-		Think about how to extend this..
-		
-		Some commands may need to report data back for use in future commands.
-		For example, if we have a sensor then we might need to read a value from it 
-		and take an action based on that value.
-
-		Probably a version 2.0 type thing.   KISS.
-	*/
-
-	if (cmd == "FWD")
+	if (cmd == "FWD") 
 	{
 		moveForward(param1, param2);
 	}
 
 	if (cmd == "RVS") 
 	{
-		moveBackward(param1, param2);
+
 	}
 
 	if (cmd == "RGT")
 	{
-		turnRight(param1);
+
 	}
 
 	if (cmd == "LFT")
 	{
-		turnLeft(param1);
+
 	}
 
 
