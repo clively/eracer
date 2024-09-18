@@ -4,12 +4,17 @@
 #include <ERacerControl.h>
 #include <ERacerCommandProcessor.h>
 #include <eRacerVarSetup.h>
+#include <string>
 
-ERacerControl erc(MOTOR_1_SPEED_PIN, MOTOR_1_DIR_A_PIN, MOTOR_1_DIR_A_PIN,
+ERacerControl erc(MOTOR_1_SPEED_PIN, MOTOR_1_DIR_A_PIN, MOTOR_1_DIR_B_PIN,
 								 MOTOR_2_SPEED_PIN,MOTOR_2_DIR_A_PIN, MOTOR_2_DIR_B_PIN);
 
 ERacerCommandProcessor inputHandler;
 
+//PubSubClient mqttClient(mqtt_server, mqtt_port, mqttCallback, espClient);
+
+//PubSubClient* mqttClient; //declare a pointer to some memory space to hold a future mqttClient
+PubSubClient *mqttClient;
 
 /************  
 	Receives data from the MQTT broker
@@ -19,42 +24,50 @@ ERacerCommandProcessor inputHandler;
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
 	Serial.println("Command Received");
 
+  char cmdToProcess[length+1]; // establish the byte array
+	memcpy(cmdToProcess, payload, length); // copy the data
+	cmdToProcess[length] = 0; // make sure it is null terminated;
+
+/*
 	char cmdToProcess[(sizeof payload) + 1];  // establish the byte array
 
 	memcpy(cmdToProcess, payload, sizeof payload); // copy the data
 	cmdToProcess[sizeof payload] = 0; // make sure it is null terminated;
-
+*/
 	// NOW we need to parse the command
 
 	ERacerCommandDataType cmd = inputHandler.parseCommandLine(cmdToProcess);
 	Serial.print("COMMAND: ");
 
-	Serial.print(cmd.cmdName);
+	Serial.print(cmd.cmdName.c_str());
 	Serial.print("  ");
 	Serial.print(cmd.param1);
 	Serial.print("  ");
 	Serial.println(cmd.param2);
 
   erc.runCommand(cmd.cmdName, cmd.param1, cmd.param2);
+
+  mqttClient->publish(mqtt_topicResponse, "Command Complete");
+  Serial.println("Command Run Complete");
 } // function::mqttCallback
 
 /************  
 	Connects to the MQTT broker
 ************/
 void connectToMQTT() {
-    while (!mqttClient.connected()) {
+    while (!mqttClient->connected()) {
 
         Serial.printf("Connecting to MQTT Broker as %s...\n", client_id);
-        if (mqttClient.connect(client_id, mqtt_username, mqtt_password)) {
+        if (mqttClient->connect(client_id, mqtt_username, mqtt_password)) {
             Serial.println("Connected to MQTT broker");
-            mqttClient.subscribe(mqtt_topic);
+            mqttClient->subscribe(mqtt_topicCommand);
 
 						snprintf (msg, MSG_BUFFER_SIZE, "[%s] is ready", client_id);
 
-            mqttClient.publish(mqtt_topic, msg);  // Publish message upon connection
+            mqttClient->publish(mqtt_topicResponse, msg);  // Publish message upon connection
         } else {
             Serial.print("Failed to connect to MQTT broker, rc=");
-            Serial.print(mqttClient.state());
+            Serial.print(mqttClient->state());
             Serial.println(" Retrying in 5 seconds.");
             delay(5000);
         }
@@ -67,16 +80,19 @@ void connectToMQTT() {
 void mqttInitialize() 
 {
   //if you get here you have connected to the WiFi    
-    Serial.print("Setting mqtt to ");
-    Serial.println(mqtt_server);
+  Serial.print("Setting mqtt to ");
+  Serial.println(mqtt_server);
 
-    espClient.setCACert(ca_cert);  // for security, define which certificate to use to encrypt/decrypt messages
-   
-    mqttClient.setServer(mqtt_server, mqtt_port);
-    mqttClient.setKeepAlive(60);
-    mqttClient.setCallback(mqttCallback);
+  espClient.setCACert(ca_cert);  // for security, define which certificate to use to encrypt/decrypt messages
 
-    connectToMQTT();
+  mqttClient = new PubSubClient(mqtt_server, mqtt_port, mqttCallback, espClient);
+
+//  mqttClient.setServer(mqtt_server, mqtt_port);
+  mqttClient->setKeepAlive(60);
+  // I don't think the set Callback  should happen until after connect
+  // mqttClient.setCallback(mqttCallback);  <-- this is what is killing everything.  
+
+  connectToMQTT();
 } // function::mqttInitialize
 
 /************  
@@ -122,7 +138,7 @@ void wifiInitialize()
 	// Wifi
   WiFi.mode(WIFI_STA); // explicitly set mode to STATION, esp defaults to STA+AP  
 
-  delay(3000); // wait 3 seconds after setting up wifi to give it time to connect
+  delay(5000); // wait 5 seconds after setting up wifi to give it time to connect
  
   // wm.resetSettings(); // this wipes settings.  Only uncomment for testing purposes
 
@@ -138,7 +154,7 @@ void wifiInitialize()
   // set dark theme
   wm.setClass("invert");
 
-  wm.setConfigPortalTimeout(90); // auto close configportal after n seconds
+  wm.setConfigPortalTimeout(180); // auto close configportal after 3 minutes
 
   bool res;
 	res = wm.autoConnect(client_id); // password protected ap
@@ -157,28 +173,31 @@ void setup() {
 
 	// Turn on our Serial Output for debugging/logging purposes.
   Serial.begin(115200);
-  Serial.setDebugOutput(true);  
+//  Serial.setDebugOutput(true);  
+
+  Serial.println("=== Beginning To Run ===");
 
 	// Pin initialize
   pinMode(TRIGGER_PIN, INPUT);  // wifi reset pin
   pinMode(STATUS_LED, OUTPUT);	// status LED pin
 
-
   digitalWrite(STATUS_LED, HIGH);  // turn the LED on (HIGH is the voltage level)
   Serial.println("\n Starting");
+  delay(5000);  // just wait 5 seconds
 
+  Serial.println("-- initi wifi");
 	wifiInitialize();
 
+  Serial.println("-- initi mqtt");
   mqttInitialize();  
 
-  Serial.println("Setup eRacer control");
+  Serial.println("-- init eRacer control");
 
   erc.begin();
 
   Serial.println("Setup complete");
 
   digitalWrite(STATUS_LED, true); // turn on our LED, we are processing
-
 }  // function::setup
 
 /************  
@@ -188,17 +207,22 @@ void setup() {
 	If so, grab that data and execute the command.
 ************/
 void loop() {
- 
- 	checkWifiResetButton();
+  Serial.println("*************  Looping ******************");
+  
+  // 	checkWifiResetButton();  // figure this out when we actually have a button connected
 
   // now poll the mqtt 
-  if (!mqttClient.connected()) {
+  if (!mqttClient->connected()) {
     connectToMQTT();
   }
-  mqttClient.loop();
+  mqttClient->loop();
 
 
   yield(); // this allows the other thread to pull data back
 
+  // I feel like some delay or something needs to be here, but I'm not certain
+  delay(3000); // remove this later.  I just need to see all the logs.
+
+//  erc.moveForward(255, 2);
 
 } // function::loop

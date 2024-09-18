@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35219.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "eRacerRemote", "eRacerRemote\eRacerRemote.csproj", "{9C7B403E-C8C7-4862-94D8-390EFB660E7A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Config", "Config", "{0FA4F3AE-B277-418B-96AE-D6F7BB63E76C}"
+	ProjectSection(SolutionItems) = preProject
+		Config\emqxsl-ca.crt = Config\emqxsl-ca.crt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9C7B403E-C8C7-4862-94D8-390EFB660E7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C7B403E-C8C7-4862-94D8-390EFB660E7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C7B403E-C8C7-4862-94D8-390EFB660E7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C7B403E-C8C7-4862-94D8-390EFB660E7A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7BA20A0A-A456-4B0A-954F-72204393CF2D}
+	EndGlobalSection
+EndGlobal

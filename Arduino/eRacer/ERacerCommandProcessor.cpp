@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS  // required to use strcpy within VS2022.  Arduino doesn't have this issue
 
 #include "ERacerCommandProcessor.h"
+#include <Arduino.h>
 #include <stdio.h>
 #include <string>
 
@@ -31,12 +32,16 @@ ERacerCommandProcessor::ERacerCommandProcessor()
 ERacerCommandDataType ERacerCommandProcessor::parseCommandLine(std::string input)
 {
 
-    std::vector<std::string> x = split(input, ':');
+  std::vector<std::string> x = split(input, ':');
+
+  Serial.print("command data: ");
+  Serial.println(input.c_str());
 
 	struct ERacerCommandDataType result {};
 
     if (x.size() >= 1) {
         result.cmdName = x.at(0);
+        Serial.println("Setting cmdName");
     }
     else {
         result.cmdName = "";
@@ -45,17 +50,23 @@ ERacerCommandDataType ERacerCommandProcessor::parseCommandLine(std::string input
     if (x.size() >= 2)
     {
         result.param1 = std::stoi(x.at(1));
+        Serial.print("Setting param 1: ");
+        Serial.println(result.param1);
     }
     else {
         result.param1 = 0;
+        Serial.println("Param 1 not detected");
     }
 
     if (x.size() >= 3)
     {
         result.param2 = std::stoi(x.at(2));
+        Serial.print("Setting param 2: ");
+        Serial.println(result.param2);
     }
     else {
         result.param2 = 0;
+        Serial.println("Param 1 not detected");
     }
 
 	return result;

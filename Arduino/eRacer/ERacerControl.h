@@ -23,6 +23,7 @@ class ERacerControl
                   int motorBPin2);
     void begin();
     void runCommand(std::string cmd, int param1, int param2);
+    void moveForward(int speed, int seconds);
 
 
   private:
@@ -34,8 +35,8 @@ class ERacerControl
     int _motorBPin1;
     int _motorBPin2;
 
-    void engage(int speed);
-    void moveForward(int speed, int seconds);
+    void engage(int speedA, int speedB);
+//    void moveForward(int speed, int seconds);
     void moveBackward(int speed, int seconds);
     void turnRight(int degrees);
     void turnLeft(int degrees);
