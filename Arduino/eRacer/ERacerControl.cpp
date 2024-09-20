@@ -48,12 +48,12 @@ void ERacerControl::runCommand(std::string cmd, int param1, int param2)
 
 	if (cmd == "RGT")
 	{
-    turnRight(param1);
+    turnRight(param1, param2);
 	}
 
 	if (cmd == "LFT")
 	{
-    turnLeft(param1);
+    turnLeft(param1, param2);
 	}
 
 
@@ -125,7 +125,7 @@ void ERacerControl::moveBackward(int speed, int seconds)
   engage(0, 0);
 } // method::moveBackward
 
-void ERacerControl::turnRight(int degrees)
+void ERacerControl::turnRight(int speed, int seconds)
 {
   digitalWrite(_motorAPin1, LOW);
   digitalWrite(_motorAPin2, HIGH);
@@ -133,14 +133,14 @@ void ERacerControl::turnRight(int degrees)
   digitalWrite(_motorBPin1, HIGH);
   digitalWrite(_motorBPin2, LOW);
 
-  engage(100, 100);
+  engage(speed, speed);
 
-  delay(calculateTimeFromDegress(degrees, 100)); // this will need to be tuned
+  delay(seconds * 1000); 
 
   engage(0, 0);
 } // method::turnRight
 
-void ERacerControl::turnLeft(int degrees)
+void ERacerControl::turnLeft(int speed, int seconds)
 {
   digitalWrite(_motorAPin1, HIGH);
   digitalWrite(_motorAPin2, LOW);
@@ -148,19 +148,14 @@ void ERacerControl::turnLeft(int degrees)
   digitalWrite(_motorBPin1, LOW);
   digitalWrite(_motorBPin2, HIGH);
 
-  engage(100, 100);
-
-  delay(calculateTimeFromDegress(degrees, 100)); // this will need to be tuned
+  engage(speed, speed);
+	
+  delay(seconds * 1000); 
 
   engage(0, 0);
 } // method::turnLeft
 
-int ERacerControl::calculateTimeFromDegress(int degrees, int speed)
-{
-  // hand wavy magic to be put in here.
 
-  return 2000;
-}
 
 
 

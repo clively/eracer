@@ -60,6 +60,7 @@ void connectToMQTT() {
         Serial.printf("Connecting to MQTT Broker as %s...\n", client_id);
         if (mqttClient->connect(client_id, mqtt_username, mqtt_password)) {
             Serial.println("Connected to MQTT broker");
+						// subscribe to a topic with the same name as the racer
             mqttClient->subscribe(mqtt_topicCommand);
 
 						snprintf (msg, MSG_BUFFER_SIZE, "[%s] is ready", client_id);
@@ -164,6 +165,16 @@ void wifiInitialize()
     ESP.restart(); // restart the device and try again
   } 
 } // function::wifiInitialize
+/************  
+	initExternalAntenna
+	Turns on the external antenna
+************/
+
+void initExternalAntenna() {
+	//https://www.sigmdel.ca/michel/ha/xiao/xiao_esp32c6_intro_en.html#antenna_1
+	//https://forum.seeedstudio.com/t/xiao-esp32c6-switching-between-builtin-and-external-antenna/276374/13
+	digitalWrite(WIFI_ANT_CONFIG, HIGH); 
+} // function::initExternalAntenna
 
 /************  
 	System Setup.  
@@ -184,6 +195,9 @@ void setup() {
   digitalWrite(STATUS_LED, HIGH);  // turn the LED on (HIGH is the voltage level)
   Serial.println("\n Starting");
   delay(5000);  // just wait 5 seconds
+
+	Serial.println("Enable external antenna");
+	initExternalAntenna();
 
   Serial.println("-- initi wifi");
 	wifiInitialize();

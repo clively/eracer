@@ -38,11 +38,8 @@ class ERacerControl
     void engage(int speedA, int speedB);
 //    void moveForward(int speed, int seconds);
     void moveBackward(int speed, int seconds);
-    void turnRight(int degrees);
-    void turnLeft(int degrees);
-
-    int calculateTimeFromDegress(int degrees, int speed);
-
+    void turnRight(int speed, int seconds);
+    void turnLeft(int speed, int seconds);
 };
 
 #endif

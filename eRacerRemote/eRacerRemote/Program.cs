@@ -1,45 +1,100 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using eRacerRemote;
+using eRacerRemote.Services;
+using eRacerRemote.Support;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using eRacerRemote.Interfaces;
+using Microsoft.Extensions.Logging;
 
-Console.WriteLine("Hello, World!");
-
-var ct = new CancellationTokenSource();
-
-MqHandler mqHandler = new()
+HostApplicationBuilderSettings settings = new()
 {
-	MqttBrokerUrl = "yde4f5d3.ala.us-east-1.emqxsl.com",
-	MqttClientId = "DASH001",
-	MqttPort = 8883,
-	MqttTopicCommand = "eRaceCmd",
-	MqttTopicResponse = "eRaceRsp",
-	MqttUsername = "LCDashboard",
-	MqttPassword = "Funny@004a"
-
+	Args = args,
+	Configuration = new ConfigurationManager(),
+	ContentRootPath = Directory.GetCurrentDirectory(),
 };
 
-Console.WriteLine("kicking off the mq handler");
+settings.Configuration.AddJsonFile("Configuration\\Config.json", optional: false);
+settings.Configuration.AddCommandLine(args);
+
+var builder = Host.CreateApplicationBuilder(settings);
+
+builder.Services.Configure<AppConfiguration>(builder.Configuration.GetSection("MqSetup"));
+
+builder.Services.AddSingleton<IMqHandler, MqHandler>(); // add the MqHandler to the service collection.
+
+/* logging */
+using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+ILogger logger = factory.CreateLogger("Program");
+
+
+logger.LogInformation("It begins");
+
+/* setup host */
+using IHost host = builder.Build();
+
+/* and away we go */
+var mqHandler = host.Services.GetRequiredService<IMqHandler>();
+
+/*
+ * We could host our own MQ server....
+ * https://test.mosquitto.org/
+ */
 
 await mqHandler.InitializeAsync();
+Boolean continueRunning = true;
+String lastCommand = String.Empty;
 
-String cmd = String.Empty;
-
-
-while (true)
+while (continueRunning)
 {
 	Console.WriteLine("By Your Command:");
 
-	cmd = Console.ReadLine()!;
+	String cmd = Console.ReadLine()!.Trim().ToUpper();
+	Boolean cmdHandled = false;
 
-	if (cmd == "exit")
+	// switch doesn't work with StartsWith
+	if (cmd.StartsWith("EXIT"))
 	{
-		break;
+		continueRunning = false;
+		cmdHandled = true;
 	}
 
-	mqHandler.SendMessage(cmd);
-	Console.WriteLine("Message Sent");
+	if (cmd.StartsWith("SET:"))
+	{
+		String newRacerName = cmd.Trim().ToUpper().Remove(0, 4);
+		if (!string.IsNullOrEmpty(newRacerName))
+		{
+			mqHandler.MqttTopicCommand = newRacerName;
+			Console.WriteLine("Racer Name Updated");
+		} else
+		{
+			Console.WriteLine("You must enter a NAME for the racer.  Exa:  SET:RACER001");
+		}
+		cmdHandled = true;
+	}
 
-	await Task.Delay(5000); // Wait for 5 seconds
-	Console.Write(".");
+	if (cmd.StartsWith("HELP"))
+	{
+		ExtraCommands.EmitHelp();
+		cmdHandled = true;
+	}
+
+	if (cmd == "R")
+	{
+		// replay command
+		mqHandler.SendMessage(lastCommand);
+		Console.WriteLine("Message Sent");
+	}
+
+	if (!cmdHandled)
+	{
+		mqHandler.SendMessage(cmd);
+		lastCommand = cmd;
+		Console.WriteLine("Message Sent");
+	}
+
+//	await Task.Delay(5000); // Wait for 5 seconds
+	Console.WriteLine("");
 }
 
 Console.WriteLine("program done.");

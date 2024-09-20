@@ -1,0 +1,11 @@
+{
+  "MqSetup": {
+    "BrokerUrl": "yde4f5d3.ala.us-east-1.emqxsl.com",
+    "BrokerPort": 8883,
+    "ClientId": "DASH001",
+    "UserName": "LCDashboard",
+    "Password": "Funny@004a",
+    "TopicCommand": "eRaceCmd",
+    "TopicResponse": "eRaceRsp"
+  }
+}
