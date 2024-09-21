@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "eRacerDesktop (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "eRacerDesktop (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

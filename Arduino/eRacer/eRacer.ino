@@ -165,6 +165,8 @@ void wifiInitialize()
     ESP.restart(); // restart the device and try again
   } 
 } // function::wifiInitialize
+
+
 /************  
 	initExternalAntenna
 	Turns on the external antenna
@@ -175,6 +177,29 @@ void initExternalAntenna() {
 	//https://forum.seeedstudio.com/t/xiao-esp32c6-switching-between-builtin-and-external-antenna/276374/13
 	digitalWrite(WIFI_ANT_CONFIG, HIGH); 
 } // function::initExternalAntenna
+
+/************  
+	pulse the internal LED	
+************/
+
+void pulse(void) {
+	static unsigned long delaytime = 0;
+	static int delta = PULSE_DELTA;
+	static int fade = 0;
+
+  if (millis() - delaytime > PULSE_DELAY) {
+    fade += delta;
+    if (fade <= 0) {
+      fade = 0;
+      delta = PULSE_DELTA;
+    } else if (fade >= 255) {
+      fade = 255;
+      delta = - PULSE_DELTA;
+    }
+    analogWrite(STATUS_LED, fade);
+    delaytime = millis();
+  }
+}
 
 /************  
 	System Setup.  
@@ -192,7 +217,9 @@ void setup() {
   pinMode(TRIGGER_PIN, INPUT);  // wifi reset pin
   pinMode(STATUS_LED, OUTPUT);	// status LED pin
 
-  digitalWrite(STATUS_LED, HIGH);  // turn the LED on (HIGH is the voltage level)
+  // turn it ON
+  digitalWrite(STATUS_LED, HIGH);
+
   Serial.println("\n Starting");
   delay(5000);  // just wait 5 seconds
 
@@ -211,7 +238,9 @@ void setup() {
 
   Serial.println("Setup complete");
 
-  digitalWrite(STATUS_LED, true); // turn on our LED, we are processing
+	  // turn it OFF
+  digitalWrite(STATUS_LED, 1-LOW);
+
 }  // function::setup
 
 /************  
@@ -233,6 +262,9 @@ void loop() {
 
 
   yield(); // this allows the other thread to pull data back
+
+  // I feel like some delay or something needs to be here, but I'm not certain
+	pulse();
 
   // I feel like some delay or something needs to be here, but I'm not certain
   delay(3000); // remove this later.  I just need to see all the logs.

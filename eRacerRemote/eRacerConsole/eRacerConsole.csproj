@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\eRacerCommon\eRacerCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Configuration\Config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

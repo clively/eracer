@@ -1,6 +1,6 @@
 /*******  PIN Definitions  *******/ 
 const int TRIGGER_PIN = D0;  // Connect D0 to a button to support WIFI memory reset.
-const int STATUS_LED = D1;		// 
+const int STATUS_LED = LED_BUILTIN;		// 
 
 const int MOTOR_1_SPEED_PIN = D6;
 const int MOTOR_1_DIR_A_PIN = D5;
@@ -9,6 +9,10 @@ const int MOTOR_1_DIR_B_PIN = D4;
 const int MOTOR_2_SPEED_PIN = D7;
 const int MOTOR_2_DIR_A_PIN = D8;
 const int MOTOR_2_DIR_B_PIN = D9;
+
+/*******  LED Blinking  *******/ 
+#define PULSE_DELTA 10
+#define PULSE_DELAY 50
 
 /******* MQTT Broker Connection Details *******/
 const char* mqtt_server = "yde4f5d3.ala.us-east-1.emqxsl.com";

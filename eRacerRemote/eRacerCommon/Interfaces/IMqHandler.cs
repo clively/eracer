@@ -1,4 +1,4 @@
-﻿namespace eRacerRemote.Interfaces;
+﻿namespace eRacerCommon.Interfaces;
 
 public interface IMqHandler
 {
@@ -11,10 +11,11 @@ public interface IMqHandler
 	String MqttUsername { get; set; }
 	String MqttPassword { get; set; }
 
-	Boolean KeepAlive { get; set; } 
+	Boolean KeepAlive { get; set; }
 
 
 	/* methods */
 	Task InitializeAsync();
 	void SendMessage(string message);
 }
+

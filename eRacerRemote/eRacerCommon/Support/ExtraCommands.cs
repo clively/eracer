@@ -1,10 +1,10 @@
-﻿namespace eRacerRemote.Support;
+﻿namespace eRacerCommon.Support;
 
 public static class ExtraCommands
 {
-    public static void EmitHelp()
-    {
-        Console.WriteLine(
+	public static void EmitHelp()
+	{
+		Console.WriteLine(
 @"-----------------------------
 	Racer Remote
 			
@@ -22,10 +22,10 @@ public static class ExtraCommands
 ");
 
 
-    } // method::EmitHelp
+	} // method::EmitHelp
 
-    public static void EmitNotSupported(string cmd)
-    {
-        Console.WriteLine($"Command [{cmd}] is not currently supported.");
-    } // method::NotSupported
+	public static void EmitNotSupported(string cmd)
+	{
+		Console.WriteLine($"Command [{cmd}] is not currently supported.");
+	} // method::NotSupported
 }
