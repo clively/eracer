@@ -5,8 +5,8 @@
     "ClientId": "DASH001",
     "UserName": "LCDashboard",
     "Password": "Funny@004a",
-    "TopicCommand": "eRaceCmd",
+    "TopicCommand": "eRacer0001",
     "TopicResponse": "eRaceRsp",
-    "CertLocation":  "C:\\GitProjects\\eracer\\eRacerRemote\\Config\\emqxsl-ca.crt"
+    "CertLocation": "C:\\GitProjects\\eracer\\eRacerRemote\\Config\\emqxsl-ca.crt"
   }
 }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using eRacerCommon.Interfaces;
 using Microsoft.Extensions.Logging;
+using System;
 
 HostApplicationBuilderSettings settings = new()
 {
@@ -23,15 +24,14 @@ builder.Services.Configure<AppConfiguration>(builder.Configuration.GetSection("M
 
 builder.Services.AddSingleton<IMqHandler, MqHandler>(); // add the MqHandler to the service collection.
 
-/* logging */
-using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-ILogger logger = factory.CreateLogger("Program");
+builder.Services.AddLogging((loggingBuilder) => loggingBuilder
+		.SetMinimumLevel(LogLevel.Trace)
+		.AddConsole());
 
-
-logger.LogInformation("It begins");
-
-/* setup host */
 using IHost host = builder.Build();
+
+var logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
+
 
 /* and away we go */
 var mqHandler = host.Services.GetRequiredService<IMqHandler>();

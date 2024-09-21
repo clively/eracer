@@ -29,7 +29,7 @@ public class MqHandler : IMqHandler
 	private string _certLocation = "";
 
 	public MqHandler(IOptions<AppConfiguration> appConfig,
-					ILogger logger)
+					ILogger<MqHandler> logger)
 	{
 		if (appConfig.Value != null)
 		{
