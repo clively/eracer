@@ -50,9 +50,9 @@ public class MqHandler : IMqHandler
 	{
 		string msg = Encoding.UTF8.GetString(eventArgs.ApplicationMessage.PayloadSegment);
 
-		_logger.LogDebug($"---Message from {MqttTopicCommand}");
-		_logger.LogDebug($"{msg}");
-		_logger.LogDebug("---");
+		_logger.LogInformation($"---Message from {MqttTopicCommand}");
+		_logger.LogInformation($"{msg}");
+		_logger.LogInformation("---");
 
 		return Task.CompletedTask;
 	} // method::OnApplicationMessageReceivedAsync
