@@ -96,7 +96,7 @@ public class MqHandler : IMqHandler
 
 		if (connectResult.ResultCode == MqttClientConnectResultCode.Success)
 		{
-			_logger.LogDebug("Connected to MQTT broker successfully.");
+			_logger.LogInformation("Connected to MQTT broker successfully.");
 
 			// Subscribe to a topic
 			// we might use this to have the car send data back.
@@ -105,11 +105,11 @@ public class MqHandler : IMqHandler
 			// Callback function when a message is received
 			mqttClient.ApplicationMessageReceivedAsync += OnApplicationMessageReceivedAsync;
 
-			_logger.LogDebug("Connected to MQTT broker");
+			_logger.LogInformation("Connected to MQTT broker");
 
 		} else
 		{
-			_logger.LogDebug($"Failed to connect to MQTT broker: {connectResult.ResultCode}");
+			_logger.LogInformation($"Failed to connect to MQTT broker: {connectResult.ResultCode}");
 		}
 	} // method::Connect
 
