@@ -1,12 +1,11 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using eRacerCommon.Interfaces;
 using eRacerCommon.Services;
 using eRacerCommon.Support;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using eRacerCommon.Interfaces;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
 
 HostApplicationBuilderSettings settings = new()
 {
