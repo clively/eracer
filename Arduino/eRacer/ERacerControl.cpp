@@ -1,6 +1,9 @@
 #include "Arduino.h"
 #include "ERacerControl.h"
 
+// Set I2C bus to use: Wire, Wire1, etc.
+#define WIRE Wire
+
 ERacerControl::ERacerControl(int motorAThrottlePin, 
                   int motorAPin1,
                   int motorAPin2,
@@ -16,19 +19,20 @@ ERacerControl::ERacerControl(int motorAThrottlePin,
   _motorBPin1 = motorBPin1;
   _motorBPin2 = motorBPin2;
 
-
 } // constructor
 
 void ERacerControl::begin()
 {
-  // establish pin communication
-  pinMode(_motorAThrottlePin, OUTPUT);
-  pinMode(_motorAPin1, OUTPUT);
-  pinMode(_motorAPin2, OUTPUT);
 
-  pinMode(_motorBThrottlePin, OUTPUT);
-  pinMode(_motorBPin1, OUTPUT);
-  pinMode(_motorBPin2, OUTPUT);
+	WIRE.begin();
+	expando = new PCF8575(0x20);
+	expando->begin(LOW);
+	setAllPinsTo(LOW);
+
+	//PINMODE on the throttles
+	pinMode(_motorAThrottlePin, OUTPUT);
+	pinMode(_motorBThrottlePin, OUTPUT);
+
 
 } // method::begin
 
@@ -72,8 +76,8 @@ void ERacerControl::engage(int speedA, int speedB)
   Serial.print(":");
   Serial.println(_motorBThrottlePin);
 
-  analogWrite(_motorAThrottlePin, speedA);
-  analogWrite(_motorBThrottlePin, speedB);
+	analogWrite(_motorAThrottlePin, speedA);
+	analogWrite(_motorBThrottlePin, speedB);
 }
 
 void ERacerControl::moveForward(int speed, int seconds)
@@ -83,16 +87,16 @@ void ERacerControl::moveForward(int speed, int seconds)
   Serial.print(":");
   Serial.println(_motorAPin2);
 
-  digitalWrite(_motorAPin1, HIGH);
-  digitalWrite(_motorAPin2, LOW);
+  expando->write(_motorAPin1, HIGH);
+  expando->write(_motorAPin2, LOW);
 
   Serial.print("DWB: ");
   Serial.print(_motorBPin1);
   Serial.print(":");
   Serial.println(_motorBPin2);
 
-  digitalWrite(_motorBPin1, HIGH);
-  digitalWrite(_motorBPin2, LOW);
+  expando->write(_motorBPin1, HIGH);
+  expando->write(_motorBPin2, LOW);
 
   Serial.print("moving forward: ");
   Serial.print(speed);
@@ -112,11 +116,11 @@ void ERacerControl::moveForward(int speed, int seconds)
 
 void ERacerControl::moveBackward(int speed, int seconds)
 {
-  digitalWrite(_motorAPin1, LOW);
-  digitalWrite(_motorAPin2, HIGH);
+  expando->write(_motorAPin1, LOW);
+  expando->write(_motorAPin2, HIGH);
 
-  digitalWrite(_motorBPin1, LOW);
-  digitalWrite(_motorBPin2, HIGH);
+  expando->write(_motorBPin1, LOW);
+  expando->write(_motorBPin2, HIGH);
 
   engage(speed, speed);
 
@@ -127,11 +131,11 @@ void ERacerControl::moveBackward(int speed, int seconds)
 
 void ERacerControl::turnRight(int speed, int seconds)
 {
-  digitalWrite(_motorAPin1, LOW);
-  digitalWrite(_motorAPin2, HIGH);
+  expando->write(_motorAPin1, LOW);
+  expando->write(_motorAPin2, HIGH);
 
-  digitalWrite(_motorBPin1, HIGH);
-  digitalWrite(_motorBPin2, LOW);
+  expando->write(_motorBPin1, HIGH);
+  expando->write(_motorBPin2, LOW);
 
   engage(speed, speed);
 
@@ -142,11 +146,11 @@ void ERacerControl::turnRight(int speed, int seconds)
 
 void ERacerControl::turnLeft(int speed, int seconds)
 {
-  digitalWrite(_motorAPin1, HIGH);
-  digitalWrite(_motorAPin2, LOW);
+  expando->write(_motorAPin1, HIGH);
+  expando->write(_motorAPin2, LOW);
 
-  digitalWrite(_motorBPin1, LOW);
-  digitalWrite(_motorBPin2, HIGH);
+  expando->write(_motorBPin1, LOW);
+  expando->write(_motorBPin2, HIGH);
 
   engage(speed, speed);
 	
@@ -154,6 +158,12 @@ void ERacerControl::turnLeft(int speed, int seconds)
 
   engage(0, 0);
 } // method::turnLeft
+
+void ERacerControl::setAllPinsTo(uint16_t setTo) {
+	for(int i=0;i<16;i++){
+		expando->write(i, setTo); 
+	}
+}
 
 
 

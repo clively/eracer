@@ -1,14 +1,42 @@
+#ifndef ERacerVarSetup_h
+#define ERacerVarSetup_h
+
+#include <Adafruit_SSD1306.h>
+#include <WiFiClientSecure.h>
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <PubSubClient.h>
+#include <string>
+
 /*******  PIN Definitions  *******/ 
 const int TRIGGER_PIN = D0;  // Connect D0 to a button to support WIFI memory reset.
 const int STATUS_LED = LED_BUILTIN;		// 
 
-const int MOTOR_1_SPEED_PIN = D6;
-const int MOTOR_1_DIR_A_PIN = D5;
-const int MOTOR_1_DIR_B_PIN = D4;
+#define DEVICEADDR_PCF 0x20
+// Pin expander PIN reference
+#define X_P0	0
+#define X_P1	1
+#define X_P2	2
+#define X_P3	3
+#define X_P4	4
+#define X_P5	5
+#define X_P6	6
+#define X_P7	7
+#define X_P8	0   // DOES NOT EXIST
+#define X_P9	0   // DOES NOT EXIST
+#define X_P10	8
+#define X_P11	9
+#define X_P12	10
+#define X_P13	11
+#define X_P14	12
+#define X_P15	13
 
-const int MOTOR_2_SPEED_PIN = D7;
-const int MOTOR_2_DIR_A_PIN = D8;
-const int MOTOR_2_DIR_B_PIN = D9;
+const int MOTOR_1_SPEED_PIN = D7;  // Requires an ANALOG pin.  Digital Expanders don't have that.
+const int MOTOR_1_DIR_A_PIN = X_P11;
+const int MOTOR_1_DIR_B_PIN = X_P12;
+
+const int MOTOR_2_SPEED_PIN = D8;   // Requires an ANALOG pin.  Digital Expanders don't have that.
+const int MOTOR_2_DIR_A_PIN = X_P6;
+const int MOTOR_2_DIR_B_PIN = X_P5;
 
 /*******  LED Blinking  *******/ 
 #define PULSE_DELTA 10
@@ -60,6 +88,22 @@ YSEY1QSteDwsOoBrp+uvFRTp2InBuThs4pFsiv9kuXclVzDAGySj4dzp30d8tbQk
 CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=
 -----END CERTIFICATE-----
 )EOF";
+
+// Display screen setup
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+// The pins for I2C are defined by the Wire-library. 
+// On an arduino UNO:       A4(SDA), A5(SCL)
+// On an arduino MEGA 2560: 20(SDA), 21(SCL)
+// On an arduino LEONARDO:   2(SDA),  3(SCL), ...
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C ///< See datasheet of screen for Address; 
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
+#endif
 
 
 

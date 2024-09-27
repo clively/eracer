@@ -1,10 +1,17 @@
 #include <WiFiClientSecure.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <PubSubClient.h>
+#include <string>
+
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
 #include <ERacerControl.h>
 #include <ERacerCommandProcessor.h>
 #include <eRacerVarSetup.h>
-#include <string>
+
 
 ERacerControl erc(MOTOR_1_SPEED_PIN, MOTOR_1_DIR_A_PIN, MOTOR_1_DIR_B_PIN,
 								 MOTOR_2_SPEED_PIN,MOTOR_2_DIR_A_PIN, MOTOR_2_DIR_B_PIN);
@@ -17,12 +24,66 @@ ERacerCommandProcessor inputHandler;
 PubSubClient *mqttClient;
 
 /************  
+	Display Setup
+************/
+
+
+void setupDisplay() {
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println("SSD1306 allocation failed");
+    for(;;); // Don't proceed, loop forever
+  }
+
+  display.clearDisplay();
+
+	display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_BLACK);
+	display.display();
+	
+	display.setTextSize(1);      // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE); // Draw white text
+  display.cp437(true);         // Use full 256 char 'Code Page 437' font
+
+	// Show initial display buffer contents on the screen --
+  // the library can initialize this with a splash screen.
+  display.display();
+	 // Clear the buffer
+} // function::setupDisplay
+
+void clearLine(int rowNo =2) {
+		 display.fillRect(0, (rowNo*8), SCREEN_WIDTH, 8, SSD1306_BLACK);
+		 display.display();
+} // function::clearLine
+
+void showMessage(std::string msg, int rowNo = 2) {
+	/*
+		Each "row" is 8 pixels tall; starts with zero.
+		So row 1 is 0-7, row 2 is 8-15, row r = 16 - 23,etc
+		Each row represents a single page of data in the display and has 128 (0-127) columns
+	*/
+	/* likely need to add something that will clear out this line */
+	clearLine(rowNo);
+
+	display.setCursor(0,(rowNo*8));
+
+	display.println(F(msg.c_str()));
+	display.display(); // copy it out there
+
+	Serial.println(msg.c_str());
+} //function::showMessage
+
+
+/************  
 	Receives data from the MQTT broker
 	This expects to receive commands formatted such as:
 		FWD:200:10
 ************/
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
-	Serial.println("Command Received");
+	clearLine(2);
+	clearLine(3);
+	clearLine(4);
+
+	showMessage("Command Received", 2);
 
   char cmdToProcess[length+1]; // establish the byte array
 	memcpy(cmdToProcess, payload, length); // copy the data
@@ -37,18 +98,15 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 	// NOW we need to parse the command
 
 	ERacerCommandDataType cmd = inputHandler.parseCommandLine(cmdToProcess);
-	Serial.print("COMMAND: ");
 
-	Serial.print(cmd.cmdName.c_str());
-	Serial.print("  ");
-	Serial.print(cmd.param1);
-	Serial.print("  ");
-	Serial.println(cmd.param2);
+	showMessage(cmdToProcess, 3);
 
   erc.runCommand(cmd.cmdName, cmd.param1, cmd.param2);
 
   mqttClient->publish(mqtt_topicResponse, "Command Complete");
-  Serial.println("Command Run Complete");
+  showMessage("Command Run Complete", 4);
+
+	clearLine(2);
 } // function::mqttCallback
 
 /************  
@@ -81,8 +139,8 @@ void connectToMQTT() {
 void mqttInitialize() 
 {
   //if you get here you have connected to the WiFi    
-  Serial.print("Setting mqtt to ");
-  Serial.println(mqtt_server);
+  showMessage("Setting mqtt.");
+  //Serial.println(mqtt_server);
 
   espClient.setCACert(ca_cert);  // for security, define which certificate to use to encrypt/decrypt messages
 
@@ -116,16 +174,16 @@ void checkWifiResetButton(){
       }
       
       // start portal w delay
-      Serial.println("Starting config portal");
+      showMessage("Config portal");
       wm.setConfigPortalTimeout(120);
       
       if (!wm.startConfigPortal(client_id)) {
-        Serial.println("failed to connect or hit timeout");
+        showMessage("wifi fail");
         delay(3000);
         ESP.restart();
       } else {
         //if you get here you have connected to the WiFi
-        Serial.println("connected.");
+        showMessage("connected.");
       }
     }
   }
@@ -138,8 +196,8 @@ void wifiInitialize()
 {
 	// Wifi
   WiFi.mode(WIFI_STA); // explicitly set mode to STATION, esp defaults to STA+AP  
-
-  delay(5000); // wait 5 seconds after setting up wifi to give it time to connect
+	WiFi.setTxPower((wifi_power_t)cpower);
+  delay(3000); // wait 5 seconds after setting up wifi to give it time to connect
  
   // wm.resetSettings(); // this wipes settings.  Only uncomment for testing purposes
 
@@ -158,12 +216,14 @@ void wifiInitialize()
   wm.setConfigPortalTimeout(180); // auto close configportal after 3 minutes
 
   bool res;
+	showMessage("Portal Up");
 	res = wm.autoConnect(client_id); // password protected ap
 
   if(!res) {
     Serial.println("Failed to connect or hit timeout");
     ESP.restart(); // restart the device and try again
   } 
+	showMessage("Portal done.");
 } // function::wifiInitialize
 
 
@@ -201,6 +261,7 @@ void pulse(void) {
   }
 }
 
+
 /************  
 	System Setup.  
 	This runs exactly 1 time when the system is booting up.
@@ -209,9 +270,11 @@ void setup() {
 
 	// Turn on our Serial Output for debugging/logging purposes.
   Serial.begin(115200);
+	Serial.println("Setup display");
+	setupDisplay();
+	delay(2000);
 //  Serial.setDebugOutput(true);  
-
-  Serial.println("=== Beginning To Run ===");
+  showMessage("Beginning");
 
 	// Pin initialize
   pinMode(TRIGGER_PIN, INPUT);  // wifi reset pin
@@ -220,23 +283,23 @@ void setup() {
   // turn it ON
   digitalWrite(STATUS_LED, HIGH);
 
-  Serial.println("\n Starting");
+  showMessage("Starting");
   delay(5000);  // just wait 5 seconds
 
-	Serial.println("Enable external antenna");
-	initExternalAntenna();
+	showMessage(" ext antenna");
+	//initExternalAntenna();
 
-  Serial.println("-- initi wifi");
+  showMessage("initi wifi");
 	wifiInitialize();
 
-  Serial.println("-- initi mqtt");
+  showMessage("initi mqtt");
   mqttInitialize();  
 
-  Serial.println("-- init eRacer control");
+  showMessage("init control");
 
-  erc.begin();
+  erc.begin();  // after this executes then it goes straight into the loop.
 
-  Serial.println("Setup complete");
+  showMessage("Ready"); // this was never sent.
 
 	  // turn it OFF
   digitalWrite(STATUS_LED, 1-LOW);

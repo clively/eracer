@@ -55,10 +55,10 @@ public partial class MainForm : Form
 		/// // do I typecast it back to a InternalLogger ?  that don't work either.
 		var log = _logger as InternalLogger;
 
-	https://stackoverflow.com/questions/65443870/can-a-serilog-ilogger-be-converted-to-a-microsoft-extensions-logging-ilogger
+	//https://stackoverflow.com/questions/65443870/can-a-serilog-ilogger-be-converted-to-a-microsoft-extensions-logging-ilogger
 
 
-		_logger.
+		//_logger.
 
 		// this won't work because the logger is passed to this as a different interface entirely.
 		// so how the hell do I get the right thing??

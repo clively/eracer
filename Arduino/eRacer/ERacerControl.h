@@ -3,6 +3,8 @@
 
 #include "Arduino.h"
 #include <string>
+#include <PCF8575.h>
+#include <Wire.h>
 
 /*
 A 3 letter command, followed by values that are in the parameters.  examples include:
@@ -23,8 +25,6 @@ class ERacerControl
                   int motorBPin2);
     void begin();
     void runCommand(std::string cmd, int param1, int param2);
-    void moveForward(int speed, int seconds);
-
 
   private:
     int _motorAThrottlePin;
@@ -35,11 +35,15 @@ class ERacerControl
     int _motorBPin1;
     int _motorBPin2;
 
+		PCF8575 *expando;
+
     void engage(int speedA, int speedB);
-//    void moveForward(int speed, int seconds);
+		void moveForward(int speed, int seconds);
     void moveBackward(int speed, int seconds);
     void turnRight(int speed, int seconds);
     void turnLeft(int speed, int seconds);
+
+		void setAllPinsTo(uint16_t setTo);
 };
 
 #endif
